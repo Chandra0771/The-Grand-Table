@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Grand Table — Fine Dining</title>
+
+<!-- ══ PWA ══ -->
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#c9a84c"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Grand Table"/>
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png"/>
+<meta name="description" content="Luxury hotel dining — order food, track your order, and earn loyalty rewards."/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --gold:#C9A84C;--gold-lt:#e8c96b;--gold-dk:#9a7535;
+  --cream:#FAF6EF;--cream2:#F2EBE0;--dark:#1A1208;--dark2:#2C2010;
+  --text:#3D2B0E;--muted:#7A6040;--red:#C0392B;--green:#27ae60;
+  --card:#FFFFFF;--border:#E8DCC8;
+  --shadow:0 8px 40px rgba(26,18,8,.12);
+  --shadow-lg:0 20px 80px rgba(26,18,8,.2);
+  --r:16px;--r-sm:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);overflow-x:hidden}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--cream2)}
+::-webkit-scrollbar-thumb{background:var(--gold);border-radius:3px}
+
+/* ── KEYFRAMES ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes goldGlow{0%,100%{box-shadow:0 0 20px rgba(201,168,76,.3)}50%{box-shadow:0 0 40px rgba(201,168,76,.7)}}
+@keyframes heroParticle{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:.6}90%{opacity:.4}100%{transform:translateY(-100px) rotate(720deg);opacity:0}}
+@keyframes textReveal{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0% 0 0)}}
+@keyframes borderAnim{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes heartBeat{0%{transform:scale(1)}25%{transform:scale(1.3)}50%{transform:scale(1)}75%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes cartBounce{0%{transform:translateY(0)}30%{transform:translateY(-8px)}60%{transform:translateY(2px)}80%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+@keyframes toastSlide{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;width:100%;z-index:1000;padding:0 2rem;
+  background:rgba(250,246,239,.92);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);transition:all .3s}
+nav.scrolled{background:rgba(250,246,239,.98);box-shadow:var(--shadow)}
+.nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:72px}
+.logo{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--dark);text-decoration:none;display:flex;align-items:center;gap:.5rem}
+.logo span{color:var(--gold)}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{font-size:.9rem;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:.03em;transition:color .2s;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--gold);transition:width .3s}
+.nav-links a:hover{color:var(--gold)}
+.nav-links a:hover::after{width:100%}
+.nav-actions{display:flex;align-items:center;gap:1rem}
+.nav-btn{background:none;border:none;cursor:pointer;padding:.5rem;border-radius:50%;position:relative;color:var(--text);font-size:1.2rem;transition:all .2s}
+.nav-btn:hover{background:var(--cream2);color:var(--gold)}
+.badge{position:absolute;top:0;right:0;background:var(--gold);color:#fff;font-size:.65rem;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .3s}
+.badge.bounce{animation:cartBounce .5s ease}
+.nav-user{font-size:.85rem;font-weight:500;color:var(--muted);cursor:pointer}
+#btn-auth{background:var(--gold);color:#fff;border:none;padding:.55rem 1.4rem;border-radius:50px;font-size:.85rem;font-weight:600;cursor:pointer;letter-spacing:.04em;transition:all .3s}
+#btn-auth:hover{background:var(--gold-dk);transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,.4)}
+
+/* ── HERO ── */
+#hero{min-height:100vh;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:linear-gradient(135deg,#1A1208 0%,#2C2010 40%,#3D2B0E 70%,#1A1208 100%);z-index:0}
+.hero-overlay{position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><rect fill="none" stroke="rgba(201,168,76,0.06)" stroke-width="1" x=".5" y=".5" width="59" height="59"/></svg>');z-index:1}
+.hero-particles{position:absolute;inset:0;z-index:2;overflow:hidden}
+.particle{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--gold);animation:heroParticle linear infinite;opacity:0}
+.hero-content{position:relative;z-index:10;text-align:center;padding:2rem;max-width:800px;animation:fadeUp .9s ease both}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.4);color:var(--gold-lt);font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;padding:.5rem 1.2rem;border-radius:50px;margin-bottom:2rem;animation:fadeUp .9s .1s ease both}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(3rem,8vw,6rem);color:#FAF6EF;line-height:1.05;margin-bottom:1.5rem;animation:fadeUp .9s .2s ease both}
+.hero-title em{color:var(--gold);font-style:italic}
+.hero-sub{font-family:'Cormorant Garamond',serif;font-size:clamp(1.1rem,2.5vw,1.5rem);color:rgba(250,246,239,.65);font-weight:300;margin-bottom:3rem;animation:fadeUp .9s .3s ease both;line-height:1.7}
+.hero-cta-group{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;animation:fadeUp .9s .4s ease both}
+.btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-dk));color:#fff;border:none;padding:1rem 2.5rem;border-radius:50px;font-size:1rem;font-weight:600;cursor:pointer;letter-spacing:.05em;transition:all .3s;animation:goldGlow 3s infinite}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 15px 40px rgba(201,168,76,.5)}
+.btn-ghost{background:transparent;color:#FAF6EF;border:1px solid rgba(250,246,239,.3);padding:1rem 2.5rem;border-radius:50px;font-size:1rem;cursor:pointer;letter-spacing:.05em;transition:all .3s}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-3px)}
+.hero-scroll{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);color:rgba(250,246,239,.4);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:.5rem;animation:float 3s ease-in-out infinite}
+.scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,transparent,var(--gold));animation:fadeIn 1s 1s ease both}
+.hero-stats{position:absolute;bottom:4rem;right:3rem;z-index:10;display:flex;flex-direction:column;gap:1rem;animation:fadeUp .9s .6s ease both}
+.hero-stat{text-align:right;color:#FAF6EF}
+.hero-stat strong{display:block;font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--gold)}
+.hero-stat span{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;opacity:.5}
+.hero-img-float{position:absolute;right:5%;top:50%;transform:translateY(-50%);z-index:5;width:340px;border-radius:24px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.5);animation:float 6s ease-in-out infinite}
+.hero-img-float img{width:100%;height:420px;object-fit:cover;display:block}
+
+/* ── SECTIONS ── */
+section{padding:5rem 2rem}
+.container{max-width:1280px;margin:0 auto}
+.section-tag{font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.8rem}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.2rem);color:var(--dark);line-height:1.15;margin-bottom:1rem}
+.section-sub{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--muted);font-weight:300;max-width:540px;line-height:1.7}
+
+/* ── FEATURES STRIP ── */
+#features-strip{background:linear-gradient(135deg,var(--dark),var(--dark2));padding:3rem 2rem}
+.features-grid{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:2rem}
+.feature-card{text-align:center;color:#FAF6EF;padding:1.5rem;border-radius:var(--r);border:1px solid rgba(201,168,76,.15);transition:all .3s;cursor:default}
+.feature-card:hover{border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.05);transform:translateY(-4px)}
+.feature-icon{font-size:2rem;margin-bottom:.8rem;display:block}
+.feature-card h3{font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:.4rem;color:var(--gold-lt)}
+.feature-card p{font-size:.82rem;opacity:.6;line-height:1.6}
+
+/* ── MENU ── */
+#menu{background:var(--cream)}
+.menu-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2.5rem;flex-wrap:wrap;gap:1rem}
+.filter-tabs{display:flex;gap:.5rem;flex-wrap:wrap}
+.filter-tab{background:none;border:1.5px solid var(--border);color:var(--muted);padding:.5rem 1.2rem;border-radius:50px;font-size:.85rem;cursor:pointer;transition:all .25s;font-family:'DM Sans',sans-serif}
+.filter-tab.active,.filter-tab:hover{background:var(--gold);border-color:var(--gold);color:#fff}
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.8rem}
+.dish-card{background:var(--card);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);transition:all .35s;animation:scaleIn .5s ease both;cursor:pointer}
+.dish-card:hover{transform:translateY(-8px);box-shadow:var(--shadow-lg)}
+.dish-img{position:relative;overflow:hidden;height:200px}
+.dish-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease;display:block}
+.dish-card:hover .dish-img img{transform:scale(1.08)}
+.dish-badge{position:absolute;top:.75rem;left:.75rem;background:var(--gold);color:#fff;font-size:.7rem;font-weight:700;padding:.25rem .7rem;border-radius:50px;letter-spacing:.05em}
+.dish-badge.veg{background:var(--green)}
+.wish-btn{position:absolute;top:.75rem;right:.75rem;background:rgba(255,255,255,.9);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;transition:all .25s;backdrop-filter:blur(10px)}
+.wish-btn:hover,.wish-btn.active{background:#fff;transform:scale(1.15)}
+.wish-btn.active{animation:heartBeat .4s ease}
+.dish-body{padding:1.2rem}
+.dish-name{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;margin-bottom:.25rem;color:var(--dark)}
+.dish-desc{font-size:.82rem;color:var(--muted);line-height:1.5;margin-bottom:1rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dish-footer{display:flex;align-items:center;justify-content:space-between}
+.dish-price{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--gold)}
+.dish-price sub{font-size:.7em;font-weight:400}
+.add-btn{background:var(--dark);color:#fff;border:none;padding:.55rem 1.3rem;border-radius:50px;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.4rem;transition:all .25s;letter-spacing:.02em}
+.add-btn:hover{background:var(--gold);transform:scale(1.05)}
+.add-btn.added{background:var(--green)}
+
+/* ── GALLERY STRIP ── */
+#gallery{padding:3rem 0;background:var(--cream2);overflow:hidden}
+.gallery-track{display:flex;gap:1.2rem;animation:none;width:max-content}
+.gallery-track-wrap{overflow:hidden}
+.gallery-img{width:220px;height:160px;border-radius:var(--r-sm);overflow:hidden;flex-shrink:0}
+.gallery-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.gallery-img:hover img{transform:scale(1.1)}
+
+/* ── CART SIDEBAR ── */
+.overlay{position:fixed;inset:0;background:rgba(26,18,8,.5);z-index:2000;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(4px)}
+.overlay.open{opacity:1;pointer-events:all}
+.sidebar{position:fixed;top:0;right:-480px;width:440px;max-width:95vw;height:100vh;background:var(--card);z-index:2001;transition:right .4s cubic-bezier(.25,.46,.45,.94);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(26,18,8,.2)}
+.sidebar.open{right:0}
+.sidebar-head{padding:1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sidebar-head h2{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--dark)}
+.close-btn{background:var(--cream2);border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.close-btn:hover{background:var(--cream);transform:rotate(90deg)}
+.sidebar-body{flex:1;overflow-y:auto;padding:1.2rem}
+.cart-empty{text-align:center;padding:4rem 2rem;color:var(--muted)}
+.cart-empty-icon{font-size:4rem;margin-bottom:1rem;display:block;opacity:.4}
+.cart-item{display:flex;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--border);animation:fadeIn .3s ease}
+.cart-item-img{width:70px;height:70px;border-radius:var(--r-sm);overflow:hidden;flex-shrink:0}
+.cart-item-img img{width:100%;height:100%;object-fit:cover}
+.cart-item-info{flex:1}
+.cart-item-name{font-weight:600;font-size:.9rem;margin-bottom:.2rem;color:var(--dark)}
+.cart-item-price{font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;font-weight:700}
+.qty-ctrl{display:flex;align-items:center;gap:.5rem;margin-top:.5rem}
+.qty-btn{background:var(--cream2);border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:.9rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .2s;color:var(--dark)}
+.qty-btn:hover{background:var(--gold);color:#fff}
+.qty-num{font-weight:700;font-size:.95rem;min-width:20px;text-align:center}
+.rm-btn{background:none;border:none;color:#aaa;cursor:pointer;font-size:.85rem;margin-left:auto;padding:.2rem .5rem;transition:color .2s}
+.rm-btn:hover{color:var(--red)}
+.sidebar-foot{padding:1.5rem;border-top:1px solid var(--border);background:var(--cream)}
+.totals-row{display:flex;justify-content:space-between;font-size:.9rem;color:var(--muted);margin-bottom:.5rem}
+.totals-row.total{font-weight:700;font-size:1.1rem;color:var(--dark);font-family:'Playfair Display',serif;margin-top:.5rem;padding-top:.75rem;border-top:1px solid var(--border)}
+.checkout-btn{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold-dk));color:#fff;border:none;padding:1rem;border-radius:50px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:1rem;letter-spacing:.05em;transition:all .3s}
+.checkout-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(201,168,76,.4)}
+.checkout-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.promo-row{display:flex;gap:.5rem;margin-top:.8rem}
+.promo-input{flex:1;border:1.5px solid var(--border);border-radius:50px;padding:.5rem 1rem;font-size:.85rem;font-family:'DM Sans',sans-serif;color:var(--dark);background:#fff;outline:none;transition:border-color .2s}
+.promo-input:focus{border-color:var(--gold)}
+.promo-apply{background:var(--dark);color:#fff;border:none;padding:.5rem 1.1rem;border-radius:50px;font-size:.82rem;cursor:pointer;font-weight:600;transition:all .2s}
+.promo-apply:hover{background:var(--gold)}
+.promo-msg{font-size:.8rem;margin-top:.4rem;padding-left:.5rem}
+.promo-msg.ok{color:var(--green)}
+.promo-msg.fail{color:var(--red)}
+
+/* ── WISHLIST SIDEBAR ── */
+.wish-item{display:flex;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--border);align-items:center;animation:fadeIn .3s ease}
+.wish-item-img{width:60px;height:60px;border-radius:var(--r-sm);overflow:hidden;flex-shrink:0}
+.wish-item-img img{width:100%;height:100%;object-fit:cover}
+.wish-item-info{flex:1}
+.wish-item-name{font-weight:600;font-size:.9rem;color:var(--dark)}
+.wish-item-price{font-family:'Playfair Display',serif;color:var(--gold);font-size:.95rem}
+.wish-add-btn{background:var(--dark);color:#fff;border:none;padding:.45rem 1rem;border-radius:50px;font-size:.8rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.wish-add-btn:hover{background:var(--gold)}
+.wish-rm-btn{background:none;border:none;color:#aaa;cursor:pointer;font-size:1rem;padding:.3rem;transition:color .2s}
+.wish-rm-btn:hover{color:var(--red)}
+
+/* ── AUTH MODAL ── */
+.modal-wrap{position:fixed;inset:0;z-index:3000;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-wrap.open{display:flex}
+.modal-bg{position:absolute;inset:0;background:rgba(26,18,8,.6);backdrop-filter:blur(8px)}
+.modal{position:relative;background:#fff;border-radius:24px;padding:2.5rem;width:100%;max-width:440px;animation:scaleIn .3s ease;box-shadow:var(--shadow-lg)}
+.modal h2{font-family:'Playfair Display',serif;font-size:1.7rem;color:var(--dark);margin-bottom:.3rem}
+.modal p{color:var(--muted);font-size:.9rem;margin-bottom:1.8rem}
+.form-group{margin-bottom:1.1rem}
+.form-group label{display:block;font-size:.82rem;font-weight:600;color:var(--muted);margin-bottom:.4rem;letter-spacing:.03em}
+.form-group input,.form-group select{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.75rem 1rem;font-size:.9rem;font-family:'DM Sans',sans-serif;color:var(--dark);background:#fafafa;outline:none;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus{border-color:var(--gold);background:#fff}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.modal-submit{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold-dk));color:#fff;border:none;padding:1rem;border-radius:50px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:.5rem;transition:all .3s;letter-spacing:.04em}
+.modal-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,168,76,.4)}
+.modal-switch{text-align:center;margin-top:1.2rem;font-size:.85rem;color:var(--muted)}
+.modal-switch a{color:var(--gold);text-decoration:none;font-weight:600;cursor:pointer}
+.modal-close{position:absolute;top:1.2rem;right:1.2rem;background:var(--cream2);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{background:var(--cream);transform:rotate(90deg)}
+.error-msg{background:#fff5f5;border:1px solid #ffcdd2;color:var(--red);padding:.6rem 1rem;border-radius:var(--r-sm);font-size:.83rem;margin-bottom:1rem;display:none}
+
+/* ── ORDER MODAL ── */
+#order-modal .modal{max-width:520px}
+.order-summary{background:var(--cream);border-radius:var(--r-sm);padding:1.2rem;margin-bottom:1.5rem;max-height:220px;overflow-y:auto}
+.order-item-row{display:flex;justify-content:space-between;font-size:.88rem;padding:.3rem 0;color:var(--muted)}
+.order-item-row:not(:last-child){border-bottom:1px solid var(--border)}
+.order-total-row{display:flex;justify-content:space-between;font-weight:700;font-size:1rem;color:var(--dark);padding-top:.8rem;border-top:2px solid var(--border)}
+.payment-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1rem}
+.payment-opt{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.7rem;text-align:center;cursor:pointer;transition:all .2s;font-size:.82rem;color:var(--muted)}
+.payment-opt:hover,.payment-opt.selected{border-color:var(--gold);background:rgba(201,168,76,.06);color:var(--gold);font-weight:600}
+.payment-icon{display:block;font-size:1.3rem;margin-bottom:.2rem}
+
+/* ── TOAST ── */
+#toast-container{position:fixed;bottom:2rem;right:2rem;z-index:9999;display:flex;flex-direction:column;gap:.7rem}
+.toast{background:var(--dark);color:#FAF6EF;padding:.9rem 1.4rem;border-radius:var(--r-sm);font-size:.88rem;min-width:240px;max-width:320px;box-shadow:var(--shadow-lg);animation:toastSlide .4s ease;display:flex;align-items:center;gap:.7rem;border-left:4px solid var(--gold)}
+.toast.success{border-color:var(--green)}
+.toast.error{border-color:var(--red)}
+.toast-icon{font-size:1.1rem}
+
+/* ── ABOUT ── */
+#about{background:linear-gradient(135deg,var(--dark),var(--dark2));color:#FAF6EF;overflow:hidden;position:relative}
+#about::before{content:'';position:absolute;right:-100px;top:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.08),transparent 70%)}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
+.about-img-mosaic{position:relative;height:480px}
+.about-img-main{position:absolute;top:0;left:0;width:65%;height:320px;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-lg)}
+.about-img-main img{width:100%;height:100%;object-fit:cover}
+.about-img-sec{position:absolute;bottom:0;right:0;width:55%;height:240px;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-lg);border:4px solid var(--gold-dk)}
+.about-img-sec img{width:100%;height:100%;object-fit:cover}
+.about-text .section-tag{margin-bottom:.8rem}
+.about-text .section-title{color:#FAF6EF;margin-bottom:1rem}
+.about-text p{color:rgba(250,246,239,.65);line-height:1.85;margin-bottom:1.2rem;font-size:.95rem}
+.about-perks{display:flex;flex-direction:column;gap:.8rem;margin-top:1.5rem}
+.perk{display:flex;align-items:center;gap.8rem;font-size:.88rem;color:rgba(250,246,239,.75)}
+.perk::before{content:'✦';color:var(--gold);font-size:.7rem;flex-shrink:0;margin-right:.6rem}
+
+/* ── TESTIMONIALS ── */
+#testimonials{background:var(--cream2)}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.8rem;margin-top:3rem}
+.testi-card{background:#fff;border-radius:var(--r);padding:2rem;border:1px solid var(--border);transition:all .3s}
+.testi-card:hover{transform:translateY(-5px);box-shadow:var(--shadow)}
+.stars{color:var(--gold);font-size:1rem;margin-bottom:.8rem;letter-spacing:.1em}
+.testi-text{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--text);line-height:1.7;margin-bottom:1.2rem;font-style:italic}
+.testi-author{display:flex;align-items:center;gap.8rem}
+.testi-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-dk));display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-right:.8rem}
+.testi-name{font-weight:700;font-size:.88rem;color:var(--dark)}
+.testi-loc{font-size:.78rem;color:var(--muted)}
+
+/* ── FOOTER ── */
+footer{background:var(--dark);color:rgba(250,246,239,.5);padding:3rem 2rem 1.5rem}
+.footer-inner{max-width:1280px;margin:0 auto}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem}
+.footer-brand{font-family:'Playfair Display',serif;font-size:1.4rem;color:#FAF6EF;margin-bottom:.8rem}
+.footer-brand span{color:var(--gold)}
+.footer-desc{font-size:.85rem;line-height:1.7;margin-bottom:1.2rem}
+.footer-col h4{font-family:'Playfair Display',serif;color:#FAF6EF;margin-bottom:1rem;font-size:1rem}
+.footer-col a{display:block;font-size:.85rem;color:rgba(250,246,239,.5);text-decoration:none;margin-bottom:.5rem;transition:color .2s;cursor:pointer}
+.footer-col a:hover{color:var(--gold)}
+.footer-bottom{border-top:1px solid rgba(250,246,239,.08);padding-top:1.2rem;display:flex;justify-content:space-between;align-items:center;font-size:.8rem}
+.footer-bottom a{color:var(--gold);text-decoration:none}
+
+/* ── LOADING ── */
+.loader{display:inline-block;width:20px;height:20px;border:2px solid rgba(201,168,76,.3);border-radius:50%;border-top-color:var(--gold);animation:spin .8s linear infinite}
+
+/* ════════════════════════════════════════
+   PAYMENT MODAL SYSTEM
+   ════════════════════════════════════════ */
+@keyframes successPop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+@keyframes ringExpand{0%{transform:scale(.4);opacity:.8}100%{transform:scale(2.2);opacity:0}}
+@keyframes checkDraw{0%{stroke-dashoffset:100}100%{stroke-dashoffset:0}}
+@keyframes shimmerCard{0%{background-position:-400px 0}100%{background-position:400px 0}}
+@keyframes upiPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.4)}70%{box-shadow:0 0 0 10px rgba(201,168,76,0)}}
+@keyframes cashFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-10px) rotate(5deg)}}
+
+.pay-modal-inner{max-width:560px;width:100%;padding:2rem;max-height:90vh;overflow-y:auto}
+
+/* Steps */
+.pay-steps{display:flex;align-items:center;margin-bottom:2rem;gap:0}
+.pay-step{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.ps-num{width:32px;height:32px;border-radius:50%;background:var(--border);color:var(--muted);font-size:.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .4s}
+.ps-label{font-size:.78rem;font-weight:600;color:var(--muted);letter-spacing:.04em;transition:color .4s}
+.pay-step.active .ps-num{background:linear-gradient(135deg,var(--gold),var(--gold-dk));color:#fff;box-shadow:0 4px 16px rgba(201,168,76,.4)}
+.pay-step.active .ps-label{color:var(--gold)}
+.pay-step.done .ps-num{background:var(--green);color:#fff}
+.pay-step.done .ps-label{color:var(--green)}
+.ps-line{flex:1;height:2px;background:var(--border);margin:0 .6rem;border-radius:2px;transition:background .4s;min-width:30px}
+.ps-line.done{background:var(--green)}
+
+.pay-title{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--dark);margin-bottom:.3rem}
+.pay-sub{font-size:.88rem;color:var(--muted);margin-bottom:1.5rem}
+.pay-section{animation:fadeIn .3s ease}
+
+/* Order review list */
+.order-review-list{background:var(--cream);border-radius:var(--r-sm);overflow:hidden;margin-bottom:1rem;border:1px solid var(--border)}
+.orv-item{display:flex;align-items:center;gap.8rem;padding:.85rem 1rem;border-bottom:1px solid var(--border);gap:.8rem}
+.orv-item:last-child{border-bottom:none}
+.orv-img{width:52px;height:52px;border-radius:8px;overflow:hidden;flex-shrink:0}
+.orv-img img{width:100%;height:100%;object-fit:cover}
+.orv-info{flex:1}
+.orv-name{font-weight:600;font-size:.9rem;color:var(--dark)}
+.orv-qty{font-size:.78rem;color:var(--muted)}
+.orv-price{font-family:'Playfair Display',serif;font-weight:700;color:var(--gold);font-size:1rem;white-space:nowrap}
+.pay-totals{background:var(--cream2);border-radius:var(--r-sm);padding:1rem 1.2rem;margin-bottom:1.2rem;border:1px solid var(--border)}
+.pt-row{display:flex;justify-content:space-between;font-size:.88rem;color:var(--muted);padding:.25rem 0}
+.pt-row.grand{font-weight:700;font-size:1.05rem;color:var(--dark);padding-top:.7rem;border-top:2px solid var(--border);margin-top:.3rem;font-family:'Playfair Display',serif}
+.pt-row.discount{color:var(--green)}
+.pay-notes-row{margin-bottom:1.3rem}
+.pay-notes-row label{display:block;font-size:.82rem;font-weight:600;color:var(--muted);margin-bottom:.4rem;letter-spacing:.03em}
+.pay-notes-row input{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.7rem 1rem;font-size:.88rem;font-family:'DM Sans',sans-serif;color:var(--dark);background:#fff;outline:none;transition:border-color .2s}
+.pay-notes-row input:focus{border-color:var(--gold)}
+
+/* Buttons */
+.pay-next-btn{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold-dk));color:#fff;border:none;padding:1rem;border-radius:50px;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:.04em;transition:all .3s;margin-top:.5rem}
+.pay-next-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(201,168,76,.45)}
+.pay-next-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.pay-back-btn{width:100%;background:none;border:1.5px solid var(--border);color:var(--muted);padding:.8rem;border-radius:50px;font-size:.9rem;cursor:pointer;margin-top:.6rem;transition:all .2s;font-family:'DM Sans',sans-serif}
+.pay-back-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* Payment Method Tabs */
+.pm-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin-bottom:1.5rem}
+.pm-tab{background:var(--cream);border:2px solid var(--border);border-radius:var(--r-sm);padding:.9rem .5rem;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--muted);transition:all .25s;display:flex;flex-direction:column;align-items:center;gap:.3rem;font-family:'DM Sans',sans-serif}
+.pm-tab-icon{font-size:1.5rem}
+.pm-tab:hover{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.04)}
+.pm-tab.active{border-color:var(--gold);background:rgba(201,168,76,.08);color:var(--gold-dk)}
+.pm-panel{animation:fadeIn .3s ease}
+
+/* Credit Card Preview */
+.card-preview{background:linear-gradient(135deg,#1A1208 0%,#3D2B0E 50%,#2C2010 100%);border-radius:16px;padding:1.5rem;color:#fff;position:relative;overflow:hidden;margin-bottom:1.3rem;min-height:160px;box-shadow:0 12px 40px rgba(26,18,8,.3)}
+.card-preview::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(201,168,76,.08);pointer-events:none}
+.card-preview::after{content:'';position:absolute;bottom:-60px;left:-30px;width:160px;height:160px;border-radius:50%;background:rgba(201,168,76,.06);pointer-events:none}
+.card-chip{font-size:1.8rem;margin-bottom:.8rem;color:var(--gold)}
+.card-num-display{font-size:1.2rem;letter-spacing:.22em;font-family:monospace;margin-bottom:1.2rem;color:rgba(255,255,255,.9);transition:all .3s}
+.card-bottom{display:flex;align-items:flex-end;gap:2rem}
+.card-label{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;opacity:.5;margin-bottom:.2rem}
+.card-val{font-size:.9rem;font-weight:600;letter-spacing:.05em;transition:all .3s;text-transform:uppercase}
+.card-network{font-size:2rem;margin-left:auto}
+.card-form .form-group{margin-bottom:1rem}
+.card-form .form-group label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:.35rem;letter-spacing:.03em}
+.card-form .form-group input{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.72rem 1rem;font-size:.9rem;font-family:monospace;color:var(--dark);background:#fafafa;outline:none;transition:all .25s}
+.card-form .form-group input:focus{border-color:var(--gold);background:#fff;box-shadow:0 0 0 3px rgba(201,168,76,.12)}
+.input-icon-wrap{position:relative}
+.input-icon-wrap input{padding-right:3rem}
+.input-icon{position:absolute;right:1rem;top:50%;transform:translateY(-50%);font-size:1rem;pointer-events:none}
+.secure-badge{background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2);color:var(--green);font-size:.75rem;padding:.5rem .9rem;border-radius:50px;text-align:center;margin-top.5rem;margin-top:.5rem}
+
+/* UPI */
+.upi-box{display:flex;align-items:center;gap:1.5rem;background:var(--cream);border:1.5px solid var(--border);border-radius:var(--r);padding:1.2rem;margin-bottom:1rem}
+.qr-frame{position:relative;flex-shrink:0;width:186px;height:186px;display:flex;align-items:center;justify-content:center}
+#qr-img{width:180px;height:180px;border-radius:10px;border:3px solid #fff;box-shadow:0 4px 20px rgba(26,18,8,.1);display:block}
+.qr-loading{width:180px;height:180px;border-radius:10px;border:3px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;background:var(--cream2);color:var(--muted);font-size:.8rem}
+.qr-logo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--gold);color:#fff;font-weight:800;font-size:.85rem;padding:.3rem .5rem;border-radius:6px;font-family:'Playfair Display',serif;pointer-events:none}
+.upi-open-btn{display:block;width:100%;background:linear-gradient(135deg,#5f259f,#9b4de0);color:#fff;border:none;padding:.6rem 1rem;border-radius:50px;font-size:.8rem;font-weight:700;cursor:pointer;text-align:center;margin-top:.6rem;text-decoration:none;transition:opacity .2s}
+.upi-open-btn:hover{opacity:.88}
+.upi-info{flex:1;min-width:0}
+.upi-id-badge{background:var(--dark);color:var(--gold);font-size:.82rem;font-weight:700;padding:.4rem .9rem;border-radius:50px;display:inline-block;margin-bottom:.5rem;font-family:monospace}
+.upi-hint{font-size:.8rem;color:var(--muted);margin-bottom:.7rem}
+.upi-apps{display:flex;flex-wrap:wrap;gap:.4rem}
+.upi-app{background:#fff;border:1px solid var(--border);color:var(--text);font-size:.72rem;font-weight:600;padding:.3rem .6rem;border-radius:6px}
+.upi-divider{display:flex;align-items:center;gap:.8rem;color:var(--muted);font-size:.78rem;margin:.8rem 0;letter-spacing:.1em;text-transform:uppercase}
+.upi-divider::before,.upi-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.upi-verify-row{display:flex;align-items:center;gap.7rem;margin-top:.7rem;gap:.7rem}
+.upi-verify-btn{background:var(--dark);color:#fff;border:none;padding:.55rem 1.2rem;border-radius:50px;font-size:.82rem;cursor:pointer;font-weight:600;transition:all .2s;white-space:nowrap}
+.upi-verify-btn:hover{background:var(--gold)}
+.upi-verify-status{font-size:.82rem;font-weight:600}
+.upi-verify-status.ok{color:var(--green)}
+.upi-verify-status.fail{color:var(--red)}
+
+/* Cash */
+.cash-box{text-align:center;background:linear-gradient(135deg,var(--cream),var(--cream2));border:1.5px solid var(--border);border-radius:var(--r);padding:2rem 1.5rem}
+.cash-icon-big{font-size:3.5rem;display:block;margin-bottom:.8rem;animation:cashFloat 3s ease-in-out infinite}
+.cash-title{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--dark);margin-bottom:.5rem}
+.cash-desc{font-size:.88rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem}
+.cash-amount-box{background:var(--dark);color:#fff;border-radius:var(--r-sm);padding:1rem;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center}
+.cash-amount-label{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;opacity:.6}
+.cash-amount-val{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--gold);font-weight:700}
+.cash-tips{display:flex;flex-direction:column;gap:.4rem;text-align:left}
+.cash-tip{font-size:.83rem;color:var(--green);font-weight:500}
+
+/* Total bar */
+.pay-total-bar{background:linear-gradient(135deg,var(--dark),var(--dark2));color:#FAF6EF;border-radius:var(--r-sm);padding:.9rem 1.2rem;display:flex;justify-content:space-between;align-items:center;margin-top:1.2rem}
+.ptb-label{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;opacity:.6}
+.ptb-amt{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--gold);font-weight:700}
+
+/* Confirm card */
+.confirm-card{background:var(--cream);border:1.5px solid var(--border);border-radius:var(--r);padding:1.3rem;margin-bottom:1.2rem}
+.cc-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border)}
+.cc-row:last-child{border-bottom:none}
+.cc-label{font-size:.82rem;color:var(--muted)}
+.cc-val{font-size:.9rem;font-weight:600;color:var(--dark)}
+.cc-val.gold{color:var(--gold);font-family:'Playfair Display',serif;font-size:1.1rem}
+
+/* Success screen */
+.success-anim{position:relative;width:120px;height:120px;margin:0 auto 1.5rem;display:flex;align-items:center;justify-content:center}
+.success-circle{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--green),#2ecc71);display:flex;align-items:center;justify-content:center;position:relative;z-index:2;animation:successPop .6s .1s cubic-bezier(.175,.885,.32,1.275) both}
+.success-check{font-size:2rem;color:#fff;font-weight:700}
+.success-ring{position:absolute;border-radius:50%;border:3px solid var(--green);animation:ringExpand 1.5s ease-out infinite}
+.r1{width:80px;height:80px;animation-delay:0s;opacity:.7}
+.r2{width:80px;height:80px;animation-delay:.5s;opacity:.5}
+.r3{width:80px;height:80px;animation-delay:1s;opacity:.3}
+.success-title{font-family:'Playfair Display',serif;font-size:2rem;color:var(--dark);text-align:center;margin-bottom:.4rem}
+.success-sub{text-align:center;color:var(--muted);font-size:.95rem;margin-bottom:1.5rem}
+.success-ref{background:var(--dark);color:var(--gold);font-family:monospace;font-size:1rem;font-weight:700;padding:.7rem 1.5rem;border-radius:50px;text-align:center;margin-bottom:.8rem;letter-spacing:.1em}
+.success-eta{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:.5rem}
+.success-pay-info{background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.25);color:var(--green);font-size:.82rem;padding:.6rem 1rem;border-radius:var(--r-sm);text-align:center;margin-top:.5rem}
+
+/* UPI post-order confirm */
+.upi-confirm-box{background:var(--cream);border:1.5px solid var(--gold);border-radius:var(--r);padding:1.3rem;margin-top:1rem;animation:fadeIn .4s ease}
+.upi-confirm-box h4{font-family:'Playfair Display',serif;color:var(--dark);margin-bottom:.3rem;font-size:1.1rem}
+.upi-confirm-box p{font-size:.83rem;color:var(--muted);margin-bottom:1rem;line-height:1.5}
+.upi-utr-row{display:flex;gap:.5rem;margin-bottom:.8rem}
+.upi-utr-input{flex:1;border:1.5px solid var(--border);border-radius:50px;padding:.6rem 1rem;font-size:.85rem;font-family:'DM Sans',sans-serif;color:var(--dark);outline:none;transition:border-color .2s}
+.upi-utr-input:focus{border-color:var(--gold)}
+.upi-confirm-pay-btn{background:linear-gradient(135deg,var(--green),#2ecc71);color:#fff;border:none;padding:.6rem 1.3rem;border-radius:50px;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s}
+.upi-confirm-pay-btn:hover{opacity:.88;transform:translateY(-1px)}
+.upi-confirmed-badge{background:rgba(39,174,96,.1);border:1.5px solid var(--green);color:var(--green);font-weight:700;font-size:.9rem;padding:.7rem 1rem;border-radius:var(--r-sm);text-align:center}
+
+/* ── SCROLL ANIMATION ── */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}
+.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .features-grid{grid-template-columns:repeat(2,1fr)}
+  .about-grid{grid-template-columns:1fr}
+  .about-img-mosaic{height:260px;margin-bottom:2rem}
+  .testi-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .hero-stats{display:none}
+  .hero-img-float{display:none}
+  .hero-title{font-size:2.8rem}
+}
+@media(max-width:600px){
+  .features-grid{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .footer-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav id="main-nav">
+  <div class="nav-inner">
+    <a href="#" class="logo">The <span>Grand</span> Table</a>
+    <ul class="nav-links">
+      <li><a href="#hero">Home</a></li>
+      <li><a href="#menu">Menu</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#testimonials">Reviews</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="nav-btn" id="wish-toggle" title="Wishlist">
+        ♡
+        <span class="badge" id="wish-badge" style="display:none">0</span>
+      </button>
+      <button class="nav-btn" id="cart-toggle" title="Cart">
+        🛒
+        <span class="badge" id="cart-badge">0</span>
+      </button>
+      <span class="nav-user" id="nav-username"></span>
+      <button id="btn-auth">Sign In</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-particles" id="particles-container"></div>
+
+  <div class="hero-img-float">
+    <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=680&q=80" alt="Fine Dining"/>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat"><strong>200+</strong><span>Dishes</span></div>
+    <div class="hero-stat"><strong>50+</strong><span>Chefs</span></div>
+    <div class="hero-stat"><strong>4.9★</strong><span>Rating</span></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-badge">✦ Michelin Inspired Fine Dining ✦</div>
+    <h1 class="hero-title">A Culinary<br/><em>Journey</em> Awaits</h1>
+    <p class="hero-sub">From the shores of Kerala to the royal kitchens of Rajasthan — every plate tells a story of India's finest flavours.</p>
+    <div class="hero-cta-group">
+      <button class="btn-primary" onclick="scrollToMenu()">Explore Menu</button>
+      <button class="btn-ghost" onclick="openAuthModal()">Reserve a Table</button>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ── FEATURES STRIP ── -->
+<div id="features-strip">
+  <div class="features-grid">
+    <div class="feature-card reveal">
+      <span class="feature-icon">🍽️</span>
+      <h3>Chef's Table Experience</h3>
+      <p>Exclusive 7-course tasting menus curated by our executive chefs daily</p>
+    </div>
+    <div class="feature-card reveal reveal-delay-1">
+      <span class="feature-icon">🚀</span>
+      <h3>30-Minute Delivery</h3>
+      <p>Hot, fresh food delivered to your room with white-glove service</p>
+    </div>
+    <div class="feature-card reveal reveal-delay-2">
+      <span class="feature-icon">🌿</span>
+      <h3>Farm to Table</h3>
+      <p>Ingredients sourced from certified organic farms across India</p>
+    </div>
+    <div class="feature-card reveal reveal-delay-3">
+      <span class="feature-icon">⭐</span>
+      <h3>Loyalty Rewards</h3>
+      <p>Earn points with every order and unlock exclusive privileges</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── MENU ── -->
+<section id="menu">
+  <div class="container">
+    <div class="menu-header reveal">
+      <div>
+        <div class="section-tag">Our Offerings</div>
+        <h2 class="section-title">The Grand Menu</h2>
+      </div>
+      <div class="filter-tabs" id="filter-tabs">
+        <button class="filter-tab active" data-cat="all">All</button>
+        <button class="filter-tab" data-cat="starters">Starters</button>
+        <button class="filter-tab" data-cat="mains">Mains</button>
+        <button class="filter-tab" data-cat="desserts">Desserts</button>
+        <button class="filter-tab" data-cat="drinks">Drinks</button>
+      </div>
+    </div>
+    <div class="menu-grid" id="menu-grid"></div>
+  </div>
+</section>
+
+<!-- ── GALLERY STRIP ── -->
+<div id="gallery">
+  <div class="gallery-track-wrap">
+    <div class="gallery-track" id="gallery-track"></div>
+  </div>
+</div>
+
+<!-- ── ABOUT ── -->
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-img-mosaic reveal">
+        <div class="about-img-main">
+          <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=80" alt="Chef"/>
+        </div>
+        <div class="about-img-sec">
+          <img src="https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&q=80" alt="Kitchen"/>
+        </div>
+      </div>
+      <div class="about-text reveal reveal-delay-2">
+        <div class="section-tag">Our Story</div>
+        <h2 class="section-title">Passion on Every Plate</h2>
+        <p>Founded in 2018, The Grand Table was born from a desire to reimagine Indian fine dining — blending age-old recipes with modern culinary artistry.</p>
+        <p>Our team of 50+ award-winning chefs bring together flavours from every corner of India, creating dishes that are as visually stunning as they are delicious.</p>
+        <div class="about-perks">
+          <div class="perk">Sourced from 120+ certified organic farms</div>
+          <div class="perk">Zero-waste kitchen since 2021</div>
+          <div class="perk">Winner — Best Indian Restaurant, 2023 & 2024</div>
+          <div class="perk">Available 24/7 for in-room dining</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS ── -->
+<section id="testimonials">
+  <div class="container">
+    <div class="reveal" style="text-align:center;max-width:600px;margin:0 auto 3rem">
+      <div class="section-tag">Guest Voices</div>
+      <h2 class="section-title">What Our Guests Say</h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card reveal">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text">"The Dal Makhani was unlike anything I've had. Rich, smoky, and perfectly spiced — this is the gold standard."</p>
+        <div style="display:flex;align-items:center">
+          <div class="testi-avatar">🧑</div>
+          <div><div class="testi-name">Arjun Sharma</div><div class="testi-loc">Mumbai, Maharashtra</div></div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-delay-1">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text">"Ordered the Butter Chicken at midnight and it arrived in 25 minutes, piping hot. The Grand Table never disappoints!"</p>
+        <div style="display:flex;align-items:center">
+          <div class="testi-avatar">👩</div>
+          <div><div class="testi-name">Priya Nair</div><div class="testi-loc">Kochi, Kerala</div></div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-delay-2">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text">"The Gulab Jamun with saffron ice cream is transcendent. A beautiful fusion of tradition and innovation."</p>
+        <div style="display:flex;align-items:center">
+          <div class="testi-avatar">👨</div>
+          <div><div class="testi-name">Rohit Verma</div><div class="testi-loc">Delhi, NCR</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">The <span>Grand</span> Table</div>
+        <p class="footer-desc">India's finest in-room dining experience — where every meal is a celebration of flavour, tradition, and artistry.</p>
+        <div style="font-size:1.4rem;letter-spacing:.4rem">🍽️🌿⭐</div>
+      </div>
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <a onclick="scrollToMenu()">Menu</a>
+        <a href="#about">About</a>
+        <a href="#testimonials">Reviews</a>
+        <a onclick="openAuthModal()">My Account</a>
+      </div>
+      <div class="footer-col">
+        <h4>Cuisine</h4>
+        <a>North Indian</a>
+        <a>South Indian</a>
+        <a>Mughlai</a>
+        <a>Continental</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a>📞 +91 9937935339</a>
+        <a>✉️ <span class="__cf_email__" data-cfemail="197d70777c597e6b78777d6d787b757c377077">[email&#160;protected]</span></a>
+        <a>🕐 Open 24/7</a>
+        <a>📍 Odisha, India</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 The Grand Table. All rights reserved.</span>
+      <a>Privacy Policy</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ── OVERLAYS & SIDEBARS ── -->
+<div class="overlay" id="overlay"></div>
+<div class="overlay" id="wish-overlay"></div>
+
+<!-- CART SIDEBAR -->
+<div class="sidebar" id="cart-sidebar">
+  <div class="sidebar-head">
+    <h2>🛒 Your Cart</h2>
+    <button class="close-btn" id="cart-close">✕</button>
+  </div>
+  <div class="sidebar-body" id="cart-body">
+    <div class="cart-empty"><span class="cart-empty-icon">🛒</span><p>Your cart is empty</p><p style="font-size:.8rem;margin-top:.5rem">Add some delicious items!</p></div>
+  </div>
+  <div class="sidebar-foot" id="cart-foot" style="display:none">
+    <div class="promo-row">
+      <input class="promo-input" id="promo-input" placeholder="Promo code…"/>
+      <button class="promo-apply" id="promo-apply-btn">Apply</button>
+    </div>
+    <div class="promo-msg" id="promo-msg"></div>
+    <div class="totals-row"><span>Subtotal</span><span id="cart-subtotal">₹0</span></div>
+    <div class="totals-row"><span>Service Fee (10%)</span><span id="cart-fee">₹0</span></div>
+    <div class="totals-row"><span id="promo-label" style="display:none;color:var(--green)">Discount</span><span id="promo-discount" style="display:none;color:var(--green)"></span></div>
+    <div class="totals-row total"><span>Total</span><span id="cart-total">₹0</span></div>
+    <button class="checkout-btn" id="checkout-btn">Place Order</button>
+  </div>
+</div>
+
+<!-- WISHLIST SIDEBAR -->
+<div class="sidebar" id="wish-sidebar">
+  <div class="sidebar-head">
+    <h2>♡ Wishlist</h2>
+    <button class="close-btn" id="wish-close">✕</button>
+  </div>
+  <div class="sidebar-body" id="wish-body">
+    <div class="cart-empty"><span class="cart-empty-icon">♡</span><p>Your wishlist is empty</p></div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-wrap" id="auth-modal">
+  <div class="modal-bg" onclick="closeAuthModal()"></div>
+  <div class="modal">
+    <button class="modal-close" onclick="closeAuthModal()">✕</button>
+    <div id="login-form">
+      <h2>Welcome Back</h2>
+      <p>Sign in to your Grand Table account</p>
+      <div class="error-msg" id="login-error"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-pwd" placeholder="Your password"/></div>
+      <button class="modal-submit" id="login-btn">Sign In</button>
+      <div class="modal-switch">No account? <a onclick="switchToRegister()">Create one</a></div>
+    </div>
+    <div id="register-form" style="display:none">
+      <h2>Join The Table</h2>
+      <p>Create your exclusive dining account</p>
+      <div class="error-msg" id="reg-error"></div>
+      <div class="form-row">
+        <div class="form-group"><label>First Name</label><input type="text" id="reg-fname" placeholder="Priya"/></div>
+        <div class="form-group"><label>Last Name</label><input type="text" id="reg-lname" placeholder="Sharma"/></div>
+      </div>
+      <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="priya@example.com"/></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="reg-phone" placeholder="+91 98765 43210"/></div>
+      <div class="form-group"><label>Room Number (optional)</label><input type="text" id="reg-room" placeholder="512"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="reg-pwd" placeholder="Min 6 characters"/></div>
+      <button class="modal-submit" id="register-btn">Create Account</button>
+      <div class="modal-switch">Already a member? <a onclick="switchToLogin()">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAYMENT MODAL — Multi-step checkout
+     ══════════════════════════════════════════════ -->
+<div class="modal-wrap" id="pay-modal">
+  <div class="modal-bg" onclick="closePayModal()"></div>
+  <div class="modal pay-modal-inner">
+    <button class="modal-close" onclick="closePayModal()">✕</button>
+
+    <!-- STEP INDICATOR -->
+    <div class="pay-steps">
+      <div class="pay-step active" id="pstep-1"><span class="ps-num">1</span><span class="ps-label">Review</span></div>
+      <div class="ps-line"></div>
+      <div class="pay-step" id="pstep-2"><span class="ps-num">2</span><span class="ps-label">Payment</span></div>
+      <div class="ps-line"></div>
+      <div class="pay-step" id="pstep-3"><span class="ps-num">3</span><span class="ps-label">Confirm</span></div>
+    </div>
+
+    <!-- ── STEP 1: Order Review ── -->
+    <div id="pay-s1" class="pay-section">
+      <h2 class="pay-title">Your Order</h2>
+      <p class="pay-sub">Review items before payment</p>
+      <div class="order-review-list" id="order-review-list"></div>
+      <div class="pay-totals" id="pay-totals-s1"></div>
+      <div class="pay-notes-row">
+        <label>Special Instructions</label>
+        <input type="text" id="order-notes" placeholder="Allergies, spice level, no onions…"/>
+      </div>
+      <button class="pay-next-btn" onclick="goPayStep(2)">Continue to Payment →</button>
+    </div>
+
+    <!-- ── STEP 2: Payment Method ── -->
+    <div id="pay-s2" class="pay-section" style="display:none">
+      <h2 class="pay-title">Payment</h2>
+      <p class="pay-sub">Choose how you'd like to pay</p>
+
+      <!-- Method tabs -->
+      <div class="pm-tabs">
+        <button class="pm-tab active" data-pm="card" onclick="switchPayMethod('card')">
+          <span class="pm-tab-icon">💳</span> Card
+        </button>
+        <button class="pm-tab" data-pm="upi" onclick="switchPayMethod('upi')">
+          <span class="pm-tab-icon">📱</span> UPI
+        </button>
+        <button class="pm-tab" data-pm="cash" onclick="switchPayMethod('cash')">
+          <span class="pm-tab-icon">💵</span> Cash
+        </button>
+      </div>
+
+      <!-- ─ CARD PANEL ─ -->
+      <div id="pm-card" class="pm-panel">
+        <div class="card-preview" id="card-preview">
+          <div class="card-chip">▬</div>
+          <div class="card-num-display" id="cdisplay-num">•••• •••• •••• ••••</div>
+          <div class="card-bottom">
+            <div>
+              <div class="card-label">Card Holder</div>
+              <div class="card-val" id="cdisplay-name">YOUR NAME</div>
+            </div>
+            <div>
+              <div class="card-label">Expires</div>
+              <div class="card-val" id="cdisplay-exp">MM/YY</div>
+            </div>
+            <div class="card-network" id="cdisplay-net">💳</div>
+          </div>
+        </div>
+        <div class="card-form">
+          <div class="form-group">
+            <label>Card Number</label>
+            <div class="input-icon-wrap">
+              <input type="text" id="card-num" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number"/>
+              <span class="input-icon" id="card-net-icon">💳</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Name on Card</label>
+              <input type="text" id="card-name" placeholder="Priya Sharma" autocomplete="cc-name"/>
+            </div>
+            <div class="form-group">
+              <label>Expiry</label>
+              <input type="text" id="card-exp" placeholder="MM/YY" maxlength="5" autocomplete="cc-exp"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>CVV</label>
+            <div class="input-icon-wrap">
+              <input type="password" id="card-cvv" placeholder="•••" maxlength="4" autocomplete="cc-csc"/>
+              <span class="input-icon">🔒</span>
+            </div>
+          </div>
+          <div class="secure-badge">🔐 256-bit SSL encrypted · PCI DSS compliant</div>
+        </div>
+      </div>
+
+      <!-- ─ UPI PANEL ─ -->
+      <div id="pm-upi" class="pm-panel" style="display:none">
+        <div class="upi-box">
+          <div class="qr-frame" id="qr-frame">
+            <!-- Placeholder while QR loads -->
+            <div class="qr-loading" id="qr-loading">
+              <span class="loader"></span>
+              <span>Loading QR…</span>
+            </div>
+            <!-- Real QR image from backend -->
+            <img id="qr-img" src="" alt="UPI QR Code" style="display:none"/>
+            <div class="qr-logo" id="qr-logo" style="display:none">GT</div>
+          </div>
+          <div class="upi-info">
+            <div class="upi-id-badge" id="upi-id-display">ommmajhee@ybl</div>
+            <p class="upi-hint">Scan with any UPI app</p>
+            <div class="upi-apps">
+              <span class="upi-app">GPay</span>
+              <span class="upi-app">PhonePe</span>
+              <span class="upi-app">Paytm</span>
+              <span class="upi-app">BHIM</span>
+            </div>
+            <!-- Deep-link button for mobile -->
+            <a id="upi-open-app-btn" class="upi-open-btn" href="#" style="display:none">
+              📱 Open UPI App
+            </a>
+          </div>
+        </div>
+        <div class="upi-divider"><span>OR enter UPI ID</span></div>
+        <div class="form-group">
+          <label>Your UPI ID (to send payment request)</label>
+          <div class="input-icon-wrap">
+            <input type="text" id="upi-id" placeholder="yourname@okicici" autocomplete="off"/>
+            <span class="input-icon">@</span>
+          </div>
+        </div>
+        <div class="upi-verify-row">
+          <button class="upi-verify-btn" onclick="verifyUPI()">Verify UPI ID</button>
+          <span class="upi-verify-status" id="upi-status"></span>
+        </div>
+      </div>
+
+      <!-- ─ CASH PANEL ─ -->
+      <div id="pm-cash" class="pm-panel" style="display:none">
+        <div class="cash-box">
+          <div class="cash-icon-big">💵</div>
+          <h3 class="cash-title">Cash on Delivery</h3>
+          <p class="cash-desc">Pay in cash when your order arrives at your door. Our delivery partner will carry exact change.</p>
+          <div class="cash-amount-box">
+            <span class="cash-amount-label">Amount to Keep Ready</span>
+            <span class="cash-amount-val" id="cash-amount-display">₹0</span>
+          </div>
+          <div class="cash-tips">
+            <div class="cash-tip">✓ Keep exact change ready</div>
+            <div class="cash-tip">✓ Delivery in 25–35 minutes</div>
+            <div class="cash-tip">✓ Receipt provided on delivery</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pay-total-bar" id="pay-total-bar"></div>
+      <button class="pay-next-btn" onclick="proceedToConfirm()" id="pay-confirm-btn">Review & Confirm →</button>
+    </div>
+
+    <!-- ── STEP 3: Confirm & Success ── -->
+    <div id="pay-s3" class="pay-section" style="display:none">
+      <div id="pay-s3-confirm">
+        <h2 class="pay-title">Confirm Order</h2>
+        <p class="pay-sub">Almost done! Review payment details</p>
+        <div class="confirm-card" id="confirm-card"></div>
+        <button class="pay-next-btn" id="place-order-btn" onclick="placeOrder()">🍽️ Place Order</button>
+        <button class="pay-back-btn" onclick="goPayStep(2)">← Change Payment</button>
+      </div>
+      <div id="pay-s3-success" style="display:none">
+        <div class="success-anim">
+          <div class="success-circle">
+            <div class="success-check">✓</div>
+          </div>
+          <div class="success-rings">
+            <div class="success-ring r1"></div>
+            <div class="success-ring r2"></div>
+            <div class="success-ring r3"></div>
+          </div>
+        </div>
+        <h2 class="success-title">Order Placed!</h2>
+        <p class="success-sub">Your food is being prepared with love 🍽️</p>
+        <div class="success-ref" id="success-ref"></div>
+        <div class="success-eta">Arriving in <strong>25–35 minutes</strong></div>
+        <div class="success-pay-info" id="success-pay-info"></div>
+
+        <!-- UPI: shown only after UPI payment, lets customer confirm payment -->
+        <div class="upi-confirm-box" id="upi-confirm-box" style="display:none">
+          <h4>📱 Confirm Your UPI Payment</h4>
+          <p>Scan the QR above and pay. Once done, enter the UTR / Transaction ID from your UPI app and tap Confirm.</p>
+          <div class="upi-utr-row">
+            <input class="upi-utr-input" id="upi-utr-input" placeholder="UTR / Transaction ID (optional)"/>
+            <button class="upi-confirm-pay-btn" id="upi-confirm-pay-btn" onclick="confirmUpiPayment()">✓ Confirm</button>
+          </div>
+          <div id="upi-confirmed-badge" style="display:none" class="upi-confirmed-badge">✅ Payment Confirmed — Thank you!</div>
+        </div>
+
+        <button class="pay-next-btn" onclick="closePayModal()" style="margin-top:1.5rem">Done</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ────────────────────────────────────────────
+// CONFIG & STATE
+// ────────────────────────────────────────────
+const API = '';  // same origin
+let currentUser = null;
+let cart = [];        // [{dish_id, qty, notes}]
+let wishlist = [];    // [dish_id, ...]
+let promoData = null;
+let selectedPayment = 'card';
+
+// ────────────────────────────────────────────
+// DISH DATA — Real Indian dishes with Unsplash photos
+// ────────────────────────────────────────────
+const DISHES = [
+  // STARTERS
+  {id:1,name:'Reshmi Seekh Kebab',desc:'Silky chicken mince skewers with cream, cardamom & saffron, grilled in tandoor',price:520,cat:'starters',veg:false,img:'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=600&q=80',badge:'Chef\'s Pick'},
+  {id:2,name:'Paneer Tikka',desc:'Cottage cheese marinated in yoghurt, ajwain & spices, charred to perfection',price:420,cat:'starters',veg:true,img:'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d6?w=600&q=80',badge:'Veg'},
+  {id:3,name:'Dahi Puri',desc:'Crispy puris filled with spiced chickpeas, tamarind chutney & whipped yoghurt',price:280,cat:'starters',veg:true,img:'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=600&q=80',badge:'Veg'},
+  {id:4,name:'Tandoori Prawns',desc:'Tiger prawns marinated in Kashmiri chilli, mustard oil & carom seeds',price:780,cat:'starters',veg:false,img:'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&q=80',badge:'Signature'},
+  // MAINS
+  {id:5,name:'Butter Chicken',desc:'Slow-cooked chicken in a velvety tomato-butter sauce — the icon of Indian cuisine',price:620,cat:'mains',veg:false,img:'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=600&q=80',badge:'Best Seller'},
+  {id:6,name:'Dal Makhani',desc:'Black lentils slow-cooked overnight with cream, butter & whole spices',price:480,cat:'mains',veg:true,img:'https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=600&q=80',badge:'Veg'},
+  {id:7,name:'Lamb Rogan Josh',desc:'Kashmir\'s pride — tender lamb in a gravy of Kashmiri chillies & aromatic spices',price:890,cat:'mains',veg:false,img:'https://images.unsplash.com/photo-1574484284002-952d92456975?w=600&q=80',badge:'Kashmiri'},
+  {id:8,name:'Palak Paneer',desc:'Fresh spinach puree with soft cottage cheese, ginger & cumin tempering',price:440,cat:'mains',veg:true,img:'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=80',badge:'Veg'},
+  {id:9,name:'Hyderabadi Biryani',desc:'Fragrant basmati layered with slow-cooked mutton, fried onions & kewra water',price:760,cat:'mains',veg:false,img:'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&q=80',badge:'Hyderabadi'},
+  {id:10,name:'Malai Kofta',desc:'Soft paneer and potato dumplings in a rich cream & cashew gravy',price:520,cat:'mains',veg:true,img:'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&q=80',badge:'Veg'},
+  // DESSERTS
+  {id:11,name:'Gulab Jamun',desc:'Soft khoya dumplings soaked in rose & cardamom syrup, with saffron ice cream',price:280,cat:'desserts',veg:true,img:'https://images.unsplash.com/photo-1666281497516-8b9d24239feb?w=600&q=80',badge:'Veg'},
+  {id:12,name:'Mango Kulfi',desc:'Dense, creamy Indian ice cream with real Alphonso mango & pistachios',price:240,cat:'desserts',veg:true,img:'https://images.unsplash.com/photo-1629385701021-fcd6a79a38e2?w=600&q=80',badge:'Seasonal'},
+  {id:13,name:'Rasmalai',desc:'Soft chenna discs soaked in saffron-scented reduced milk with almonds',price:260,cat:'desserts',veg:true,img:'https://images.unsplash.com/photo-1579954115545-a95591f28bfc?w=600&q=80',badge:'Veg'},
+  // DRINKS
+  {id:14,name:'Mango Lassi',desc:'Chilled Alphonso mango blended with thick yoghurt, cardamom & rose water',price:180,cat:'drinks',veg:true,img:'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=600&q=80',badge:'Veg'},
+  {id:15,name:'Masala Chai',desc:'Robust Assam tea brewed with ginger, cardamom, cloves & fresh milk',price:120,cat:'drinks',veg:true,img:'https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=600&q=80',badge:'Classic'},
+  {id:16,name:'Royal Shahi Thandai',desc:'Chilled milk with almonds, saffron, rose petals & a bouquet of spices',price:220,cat:'drinks',veg:true,img:'https://images.unsplash.com/photo-1520218678377-5b9b4e9a9b2e?w=600&q=80',badge:'Signature'},
+];
+
+const galleryImages=[
+  'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80',
+  'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d6?w=400&q=80',
+  'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&q=80',
+  'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=400&q=80',
+  'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&q=80',
+  'https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=400&q=80',
+  'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&q=80',
+  'https://images.unsplash.com/photo-1666281497516-8b9d24239feb?w=400&q=80',
+  'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400&q=80',
+  'https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=400&q=80',
+];
+
+// ────────────────────────────────────────────
+// UTILITIES
+// ────────────────────────────────────────────
+function fmt(n){return '₹'+Number(n).toLocaleString('en-IN')}
+
+function toast(msg,type='success'){
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<span class="toast-icon">${type==='success'?'✓':type==='error'?'✕':'ℹ'}</span>${msg}`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(120%)';el.style.transition='all .3s';setTimeout(()=>el.remove(),300)},3000);
+}
+
+async function apiFetch(path,opts={}){
+  const res=await fetch(API+path,{credentials:'include',headers:{'Content-Type':'application/json',...(opts.headers||{})},...opts});
+  const data=await res.json();
+  return {ok:res.ok,data};
+}
+
+// ────────────────────────────────────────────
+// AUTH
+// ────────────────────────────────────────────
+function openAuthModal(){document.getElementById('auth-modal').classList.add('open')}
+function closeAuthModal(){document.getElementById('auth-modal').classList.remove('open')}
+function switchToRegister(){document.getElementById('login-form').style.display='none';document.getElementById('register-form').style.display='block'}
+function switchToLogin(){document.getElementById('register-form').style.display='none';document.getElementById('login-form').style.display='block'}
+
+function setUser(user){
+  currentUser=user;
+  const navUser=document.getElementById('nav-username');
+  const btnAuth=document.getElementById('btn-auth');
+  if(user){
+    navUser.textContent=`${user.first_name}`;
+    btnAuth.textContent='Sign Out';
+    btnAuth.onclick=doLogout;
+  }else{
+    navUser.textContent='';
+    btnAuth.textContent='Sign In';
+    btnAuth.onclick=openAuthModal;
+    cart=[];wishlist=[];
+    renderCart();renderWishlist();updateBadges();
+  }
+}
+
+async function checkSession(){
+  const {ok,data}=await apiFetch('/api/auth/me');
+  if(ok&&data.success){
+    setUser(data.data);
+    await Promise.all([loadCart(),loadWishlist()]);
+  }
+}
+
+document.getElementById('login-btn').onclick=async()=>{
+  const email=document.getElementById('login-email').value.trim();
+  const pwd=document.getElementById('login-pwd').value;
+  const errEl=document.getElementById('login-error');
+  errEl.style.display='none';
+  const {ok,data}=await apiFetch('/api/auth/login',{method:'POST',body:JSON.stringify({email,password:pwd})});
+  if(ok&&data.success){setUser(data.data);closeAuthModal();toast(`Welcome back, ${data.data.first_name}!`);await Promise.all([loadCart(),loadWishlist()]);}
+  else{errEl.textContent=data.error||'Login failed';errEl.style.display='block';}
+};
+
+document.getElementById('register-btn').onclick=async()=>{
+  const body={first_name:document.getElementById('reg-fname').value.trim(),last_name:document.getElementById('reg-lname').value.trim(),email:document.getElementById('reg-email').value.trim(),phone:document.getElementById('reg-phone').value.trim(),room:document.getElementById('reg-room').value.trim(),password:document.getElementById('reg-pwd').value};
+  const errEl=document.getElementById('reg-error');errEl.style.display='none';
+  const {ok,data}=await apiFetch('/api/auth/register',{method:'POST',body:JSON.stringify(body)});
+  if(ok&&data.success){setUser(data.data);closeAuthModal();toast(`Welcome, ${data.data.first_name}! 🎉`);}
+  else{errEl.textContent=data.error||'Registration failed';errEl.style.display='block';}
+};
+
+async function doLogout(){
+  await apiFetch('/api/auth/logout',{method:'POST'});
+  setUser(null);toast('Signed out. See you soon!','info');
+}
+
+// ────────────────────────────────────────────
+// CART
+// ────────────────────────────────────────────
+async function loadCart(){
+  if(!currentUser)return;
+  const {ok,data}=await apiFetch('/api/cart');
+  if(ok&&data.success){cart=data.data||[];renderCart();updateBadges();}
+}
+
+async function addToCart(dishId){
+  if(!currentUser){openAuthModal();toast('Please sign in to add items','info');return;}
+  const dish=DISHES.find(d=>d.id===dishId);
+  const existing=cart.find(c=>c.dish_id===dishId);
+  if(existing){
+    existing.qty+=1;
+    const {ok}=await apiFetch('/api/cart/update',{method:'PUT',body:JSON.stringify({dish_id:dishId,qty:existing.qty})});
+    if(!ok)return toast('Error updating cart','error');
+  }else{
+    cart.push({dish_id:dishId,qty:1,notes:''});
+    const {ok}=await apiFetch('/api/cart/add',{method:'POST',body:JSON.stringify({dish_id:dishId,qty:1})});
+    if(!ok){cart=cart.filter(c=>c.dish_id!==dishId);return toast('Error adding to cart','error');}
+  }
+  renderCart();updateBadges();toast(`${dish.name} added to cart 🛒`);
+  // Bounce badge
+  const badge=document.getElementById('cart-badge');
+  badge.classList.remove('bounce');
+  void badge.offsetWidth;
+  badge.classList.add('bounce');
+  // Flash button
+  const btn=document.querySelector(`[data-add-id="${dishId}"]`);
+  if(btn){btn.classList.add('added');btn.textContent='✓ Added';setTimeout(()=>{btn.classList.remove('added');btn.innerHTML='+ Add';},1500);}
+}
+
+async function removeFromCart(dishId){
+  cart=cart.filter(c=>c.dish_id!==dishId);
+  renderCart();updateBadges();
+  await apiFetch(`/api/cart/remove/${dishId}`,{method:'DELETE'});
+}
+
+async function updateQty(dishId,delta){
+  const item=cart.find(c=>c.dish_id===dishId);
+  if(!item)return;
+  item.qty=Math.max(0,item.qty+delta);
+  if(item.qty===0){await removeFromCart(dishId);return;}
+  renderCart();updateBadges();
+  await apiFetch('/api/cart/update',{method:'PUT',body:JSON.stringify({dish_id:dishId,qty:item.qty})});
+}
+
+function getCartTotals(){
+  const subtotal=cart.reduce((s,c)=>{const d=DISHES.find(x=>x.id===c.dish_id);return s+(d?d.price*c.qty:0);},0);
+  let fee=subtotal*0.10;
+  let discount=0;
+  if(promoData){
+    if(promoData.free_service)fee=0;
+    else discount=subtotal*promoData.discount;
+  }
+  const total=subtotal+fee-discount;
+  return{subtotal,fee,discount,total};
+}
+
+function renderCart(){
+  const body=document.getElementById('cart-body');
+  const foot=document.getElementById('cart-foot');
+  if(!cart.length){
+    body.innerHTML='<div class="cart-empty"><span class="cart-empty-icon">🛒</span><p>Your cart is empty</p><p style="font-size:.8rem;margin-top:.5rem">Add some delicious items!</p></div>';
+    foot.style.display='none';return;
+  }
+  body.innerHTML=cart.map(c=>{
+    const d=DISHES.find(x=>x.id===c.dish_id);
+    if(!d)return '';
+    return`<div class="cart-item">
+      <div class="cart-item-img"><img src="${d.img}" alt="${d.name}" onerror="this.src='https://via.placeholder.com/70x70/C9A84C/fff?text=🍽️'"/></div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${d.name}</div>
+        <div class="cart-item-price">${fmt(d.price)}</div>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="updateQty(${d.id},-1)">−</button>
+          <span class="qty-num">${c.qty}</span>
+          <button class="qty-btn" onclick="updateQty(${d.id},1)">+</button>
+          <button class="rm-btn" onclick="removeFromCart(${d.id})">Remove</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  foot.style.display='block';
+  const{subtotal,fee,discount,total}=getCartTotals();
+  document.getElementById('cart-subtotal').textContent=fmt(subtotal);
+  document.getElementById('cart-fee').textContent=fmt(fee);
+  if(discount>0){document.getElementById('promo-label').style.display='';document.getElementById('promo-discount').style.display='';document.getElementById('promo-discount').textContent='-'+fmt(discount);}
+  else{document.getElementById('promo-label').style.display='none';document.getElementById('promo-discount').style.display='none';}
+  document.getElementById('cart-total').textContent=fmt(total);
+}
+
+function updateBadges(){
+  const count=cart.reduce((s,c)=>s+c.qty,0);
+  const badge=document.getElementById('cart-badge');
+  badge.textContent=count;
+  badge.style.display=count?'flex':'none';
+  const wCount=wishlist.length;
+  const wBadge=document.getElementById('wish-badge');
+  wBadge.textContent=wCount;
+  wBadge.style.display=wCount?'flex':'none';
+}
+
+// Cart sidebar
+document.getElementById('cart-toggle').onclick=()=>{document.getElementById('cart-sidebar').classList.add('open');document.getElementById('overlay').classList.add('open')};
+document.getElementById('cart-close').onclick=closeCart;
+document.getElementById('overlay').onclick=closeCart;
+function closeCart(){document.getElementById('cart-sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('open')}
+
+// Promo
+document.getElementById('promo-apply-btn').onclick=async()=>{
+  const code=document.getElementById('promo-input').value.trim();
+  if(!code)return;
+  const msgEl=document.getElementById('promo-msg');
+  const {ok,data}=await apiFetch('/api/promo/validate',{method:'POST',body:JSON.stringify({code})});
+  if(ok&&data.success){promoData=data.data;msgEl.className='promo-msg ok';msgEl.textContent=`✓ ${data.data.label} applied!`;renderCart();}
+  else{promoData=null;msgEl.className='promo-msg fail';msgEl.textContent='✗ Invalid promo code';}
+};
+
+// Checkout → Payment modal
+document.getElementById('checkout-btn').onclick=()=>{
+  if(!currentUser){closeCart();openAuthModal();return;}
+  openPayModal();
+};
+
+// ────────────────────────────────────────────
+// ORDER MODAL
+// ────────────────────────────────────────────
+function openOrderModal(){
+  const{subtotal,fee,discount,total}=getCartTotals();
+  const sumEl=document.getElementById('order-summary');
+  sumEl.innerHTML=cart.map(c=>{const d=DISHES.find(x=>x.id===c.dish_id);return d?`<div class="order-item-row"><span>${d.name} × ${c.qty}</span><span>${fmt(d.price*c.qty)}</span></div>`:''}).join('')
+    +`<div class="order-total-row"><span>Total</span><span>${fmt(total)}</span></div>`;
+  document.getElementById('order-modal').classList.add('open');
+}
+function closeOrderModal(){document.getElementById('order-modal').classList.remove('open')}
+
+document.querySelectorAll('.payment-opt').forEach(opt=>{
+  opt.onclick=()=>{document.querySelectorAll('.payment-opt').forEach(o=>o.classList.remove('selected'));opt.classList.add('selected');selectedPayment=opt.dataset.pay;};
+});
+
+// ────────────────────────────────────────────
+// PAYMENT SYSTEM — Multi-step checkout
+// ────────────────────────────────────────────
+let payMethod = 'card';
+let currentPayStep = 1;
+let upiVerified = false;
+let currentPaymentId = null;   // returned by /api/payment/upi/qr
+let currentUpiUri = null;      // upi:// deep link
+
+function openPayModal() {
+  if (!currentUser) { closeCart(); openAuthModal(); return; }
+  currentPayStep = 1;
+  payMethod = 'card';
+  upiVerified = false;
+  currentPaymentId = null;
+  currentUpiUri = null;
+  buildPayStep1();
+  buildPayStep2Footer();
+  setPayStep(1);
+  document.getElementById('pay-modal').classList.add('open');
+  // reset success screen
+  document.getElementById('pay-s3-confirm').style.display = '';
+  document.getElementById('pay-s3-success').style.display = 'none';
+  // reset method tab
+  switchPayMethod('card');
+}
+function closePayModal() { document.getElementById('pay-modal').classList.remove('open'); }
+
+function setPayStep(n) {
+  currentPayStep = n;
+  [1,2,3].forEach(i => {
+    const s = document.getElementById(`pay-s${i}`);
+    const st = document.getElementById(`pstep-${i}`);
+    s.style.display = (i === n) ? '' : 'none';
+    st.classList.toggle('active', i === n);
+    st.classList.toggle('done', i < n);
+  });
+  // lines
+  document.querySelectorAll('.ps-line').forEach((l,i) => l.classList.toggle('done', i < n-1));
+}
+
+function goPayStep(n) {
+  if (n === 3) { buildConfirmCard(); }
+  setPayStep(n);
+}
+
+// ── Step 1: Order review
+function buildPayStep1() {
+  const { subtotal, fee, discount, total } = getCartTotals();
+  // Items
+  document.getElementById('order-review-list').innerHTML = cart.map(c => {
+    const d = DISHES.find(x => x.id === c.dish_id); if (!d) return '';
+    return `<div class="orv-item">
+      <div class="orv-img"><img src="${d.img}" alt="${d.name}" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&q=70'"/></div>
+      <div class="orv-info"><div class="orv-name">${d.name}</div><div class="orv-qty">Qty: ${c.qty}</div></div>
+      <div class="orv-price">${fmt(d.price * c.qty)}</div>
+    </div>`;
+  }).join('');
+  // Totals
+  let rows = `<div class="pt-row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
+    <div class="pt-row"><span>Service (10%)</span><span>${fmt(fee)}</span></div>`;
+  if (discount > 0) rows += `<div class="pt-row discount"><span>🏷️ Promo Discount</span><span>-${fmt(discount)}</span></div>`;
+  rows += `<div class="pt-row grand"><span>Grand Total</span><span>${fmt(total)}</span></div>`;
+  document.getElementById('pay-totals-s1').innerHTML = rows;
+}
+
+// ── Step 2: footer bar
+function buildPayStep2Footer() {
+  const { total } = getCartTotals();
+  document.getElementById('pay-total-bar').innerHTML =
+    `<span class="ptb-label">To Pay</span><span class="ptb-amt">${fmt(total)}</span>`;
+  document.getElementById('cash-amount-display').textContent = fmt(total);
+}
+
+// ── Switch payment method
+function switchPayMethod(m) {
+  payMethod = m;
+  ['card','upi','cash'].forEach(x => {
+    document.getElementById(`pm-${x}`).style.display = (x === m) ? '' : 'none';
+    document.querySelector(`[data-pm="${x}"]`).classList.toggle('active', x === m);
+  });
+  if (m === 'upi') fetchUpiQr();
+}
+
+// ── Card live preview
+function initCardListeners() {
+  const num = document.getElementById('card-num');
+  const name = document.getElementById('card-name');
+  const exp = document.getElementById('card-exp');
+  const cvv = document.getElementById('card-cvv');
+  if (!num) return;
+
+  num.addEventListener('input', () => {
+    let v = num.value.replace(/\D/g,'').slice(0,16);
+    num.value = v.match(/.{1,4}/g)?.join(' ') || v;
+    const disp = v.padEnd(16,'•').match(/.{1,4}/g).join(' ');
+    document.getElementById('cdisplay-num').textContent = disp;
+    // Network detection
+    let net = '💳', icon = '💳';
+    if (/^4/.test(v)) { net = '🔵 Visa'; icon = '🔵'; }
+    else if (/^5[1-5]/.test(v)) { net = '🔴 Mastercard'; icon = '🔴'; }
+    else if (/^3[47]/.test(v)) { net = '🟡 Amex'; icon = '🟡'; }
+    else if (/^6/.test(v)) { net = '🟠 RuPay'; icon = '🟠'; }
+    document.getElementById('cdisplay-net').textContent = net;
+    document.getElementById('card-net-icon').textContent = icon;
+  });
+
+  name.addEventListener('input', () => {
+    document.getElementById('cdisplay-name').textContent = name.value.toUpperCase() || 'YOUR NAME';
+  });
+
+  exp.addEventListener('input', () => {
+    let v = exp.value.replace(/\D/g,'').slice(0,4);
+    if (v.length >= 2) v = v.slice(0,2) + '/' + v.slice(2);
+    exp.value = v;
+    document.getElementById('cdisplay-exp').textContent = exp.value || 'MM/YY';
+  });
+
+  cvv.addEventListener('focus', () => { document.getElementById('card-preview').style.transform = 'rotateY(180deg)'; });
+  cvv.addEventListener('blur', () => { document.getElementById('card-preview').style.transform = ''; });
+  document.getElementById('card-preview').style.transition = 'transform .5s';
+}
+
+// ── UPI verify (mock)
+function verifyUPI() {
+  const id = document.getElementById('upi-id').value.trim();
+  const status = document.getElementById('upi-status');
+  if (!id || !id.includes('@')) { status.textContent = '✗ Invalid UPI ID'; status.className = 'upi-verify-status fail'; upiVerified = false; return; }
+  status.textContent = 'Verifying…'; status.className = 'upi-verify-status';
+  setTimeout(() => {
+    upiVerified = true;
+    status.textContent = '✓ Verified'; status.className = 'upi-verify-status ok';
+  }, 1200);
+}
+
+// ── Validate current payment step
+function proceedToConfirm() {
+  if (payMethod === 'card') {
+    const num = document.getElementById('card-num').value.replace(/\s/g,'');
+    const name = document.getElementById('card-name').value.trim();
+    const exp = document.getElementById('card-exp').value;
+    const cvv = document.getElementById('card-cvv').value;
+    if (num.length < 13) return toast('Enter a valid card number', 'error');
+    if (!name) return toast('Enter cardholder name', 'error');
+    if (exp.length < 5) return toast('Enter a valid expiry date', 'error');
+    if (cvv.length < 3) return toast('Enter CVV', 'error');
+    const [mm, yy] = exp.split('/').map(Number);
+    const now = new Date(); const nowYY = now.getFullYear() % 100; const nowMM = now.getMonth() + 1;
+    if (yy < nowYY || (yy === nowYY && mm < nowMM)) return toast('Card has expired', 'error');
+  }
+  if (payMethod === 'upi') {
+    const id = document.getElementById('upi-id').value.trim();
+    if (!upiVerified && id) { toast('Please verify your UPI ID first', 'error'); return; }
+    if (!id && !upiVerified) { /* allow QR flow */ }
+  }
+  goPayStep(3);
+}
+
+// ── Build confirm card summary
+function buildConfirmCard() {
+  const { subtotal, fee, discount, total } = getCartTotals();
+  let payDetail = '';
+  if (payMethod === 'card') {
+    const num = document.getElementById('card-num').value.replace(/\s/g,'');
+    payDetail = `💳 Card ending ···· ${num.slice(-4)}`;
+  } else if (payMethod === 'upi') {
+    const id = document.getElementById('upi-id').value.trim() || 'QR Scan';
+    payDetail = `📱 UPI — ${id}`;
+  } else {
+    payDetail = '💵 Cash on Delivery';
+  }
+  const notes = document.getElementById('order-notes').value;
+  document.getElementById('confirm-card').innerHTML =
+    `<div class="cc-row"><span class="cc-label">Payment Method</span><span class="cc-val">${payDetail}</span></div>
+     <div class="cc-row"><span class="cc-label">Items</span><span class="cc-val">${cart.reduce((s,c)=>s+c.qty,0)} items</span></div>
+     <div class="cc-row"><span class="cc-label">Subtotal</span><span class="cc-val">${fmt(subtotal)}</span></div>
+     <div class="cc-row"><span class="cc-label">Service Fee</span><span class="cc-val">${fmt(fee)}</span></div>
+     ${discount > 0 ? `<div class="cc-row"><span class="cc-label" style="color:var(--green)">Discount</span><span class="cc-val" style="color:var(--green)">-${fmt(discount)}</span></div>` : ''}
+     <div class="cc-row"><span class="cc-label">Total</span><span class="cc-val gold">${fmt(total)}</span></div>
+     ${notes ? `<div class="cc-row"><span class="cc-label">Notes</span><span class="cc-val">${notes}</span></div>` : ''}
+     <div class="cc-row"><span class="cc-label">ETA</span><span class="cc-val">25–35 minutes</span></div>`;
+}
+
+// ── Fetch real UPI QR from backend
+async function fetchUpiQr() {
+  const { total } = getCartTotals();
+  const tempRef = 'GT-' + Math.random().toString(36).slice(2,10).toUpperCase();
+
+  // Show loading state
+  document.getElementById('qr-loading').style.display = 'flex';
+  document.getElementById('qr-img').style.display = 'none';
+  document.getElementById('qr-logo').style.display = 'none';
+  document.getElementById('upi-open-app-btn').style.display = 'none';
+
+  if (!currentUser) return; // not logged in yet
+
+  const { ok, data } = await apiFetch('/api/payment/upi/qr', {
+    method: 'POST',
+    body: JSON.stringify({ amount: total, order_ref: tempRef })
+  });
+
+  document.getElementById('qr-loading').style.display = 'none';
+
+  if (ok && data.success) {
+    currentPaymentId = data.data.payment_id;
+    currentUpiUri    = data.data.upi_uri;
+
+    const img = document.getElementById('qr-img');
+    img.src = 'data:image/png;base64,' + data.data.qr_image_b64;
+    img.style.display = 'block';
+    document.getElementById('qr-logo').style.display = 'block';
+    document.getElementById('upi-id-display').textContent = data.data.upi_id;
+
+    // Mobile deep-link
+    const btn = document.getElementById('upi-open-app-btn');
+    btn.href = currentUpiUri;
+    btn.style.display = 'block';
+  } else {
+    document.getElementById('qr-loading').innerHTML =
+      '<span style="font-size:1.5rem">⚠️</span><span>QR unavailable.<br/>Use UPI ID below.</span>';
+    document.getElementById('qr-loading').style.display = 'flex';
+  }
+}
+
+// ── Place order
+async function placeOrder() {
+  const btn = document.getElementById('place-order-btn');
+  btn.innerHTML = '<span class="loader"></span> Processing…'; btn.disabled = true;
+  const { total } = getCartTotals();
+  const items = cart.map(c => {
+    const d = DISHES.find(x => x.id === c.dish_id);
+    return { dish_id: c.dish_id, name: d?.name || '', icon: '🍽️', qty: c.qty, price: d?.price || 0 };
+  });
+  const notes = document.getElementById('order-notes').value;
+  const { ok, data } = await apiFetch('/api/orders/place', { method: 'POST', body: JSON.stringify({ items, total, payment_method: payMethod, notes, eta: '25-35 minutes' }) });
+  btn.innerHTML = '🍽️ Place Order'; btn.disabled = false;
+  if (ok && data.success) {
+    const orderRef = data.data.order_ref;
+
+    // For UPI: generate a fresh QR tied to the real order ref
+    if (payMethod === 'upi') {
+      const qrRes = await apiFetch('/api/payment/upi/qr', {
+        method: 'POST',
+        body: JSON.stringify({ amount: total, order_ref: orderRef })
+      });
+      if (qrRes.ok && qrRes.data.success) {
+        currentPaymentId = qrRes.data.data.payment_id;
+        currentUpiUri    = qrRes.data.data.upi_uri;
+      }
+    }
+
+    // Show success
+    document.getElementById('pay-s3-confirm').style.display = 'none';
+    document.getElementById('pay-s3-success').style.display = '';
+    document.getElementById('success-ref').textContent = `Order Ref: ${orderRef}`;
+
+    const payLabels = {
+      card: '💳 Card Payment Confirmed',
+      upi:  '📱 Scan QR below and confirm payment after paying.',
+      cash: '💵 Cash on Delivery — Pay on arrival'
+    };
+    document.getElementById('success-pay-info').textContent = payLabels[payMethod] || '';
+
+    // Show UPI confirm box only for UPI payments
+    const confirmBox = document.getElementById('upi-confirm-box');
+    confirmBox.style.display = payMethod === 'upi' ? '' : 'none';
+    if (payMethod === 'upi') {
+      document.getElementById('upi-confirmed-badge').style.display = 'none';
+      document.getElementById('upi-confirm-pay-btn').style.display = '';
+      document.getElementById('upi-utr-input').value = '';
+    }
+
+    // Update step indicator
+    document.getElementById('pstep-3').classList.add('done');
+    document.querySelectorAll('.ps-line').forEach(l => l.classList.add('done'));
+    // Clear cart
+    cart = []; promoData = null; renderCart(); updateBadges(); closeCart();
+  } else {
+    toast(data.error || 'Failed to place order', 'error');
+  }
+}
+
+// ── Confirm UPI payment after customer has paid
+async function confirmUpiPayment() {
+  if (!currentPaymentId) { toast('Payment record not found', 'error'); return; }
+  const btn = document.getElementById('upi-confirm-pay-btn');
+  const utr = document.getElementById('upi-utr-input').value.trim();
+  btn.textContent = '…'; btn.disabled = true;
+  const { ok, data } = await apiFetch('/api/payment/upi/confirm', {
+    method: 'POST',
+    body: JSON.stringify({ payment_id: currentPaymentId, upi_txn_ref: utr })
+  });
+  btn.disabled = false;
+  if (ok && data.success) {
+    btn.style.display = 'none';
+    document.getElementById('upi-confirmed-badge').style.display = '';
+    toast('Payment confirmed! Your order is confirmed. 🎉');
+  } else {
+    btn.textContent = '✓ Confirm';
+    toast(data.error || 'Confirmation failed', 'error');
+  }
+}
+
+// ────────────────────────────────────────────
+// WISHLIST
+// ────────────────────────────────────────────
+async function loadWishlist(){
+  if(!currentUser)return;
+  const{ok,data}=await apiFetch('/api/wishlist');
+  if(ok&&data.success){wishlist=data.data||[];renderWishlist();updateBadges();renderMenu(currentFilter);}
+}
+
+async function toggleWishlist(dishId){
+  if(!currentUser){openAuthModal();toast('Sign in to save to wishlist','info');return;}
+  const{ok,data}=await apiFetch('/api/wishlist/toggle',{method:'POST',body:JSON.stringify({dish_id:dishId})});
+  if(!ok){toast('Error updating wishlist','error');return;}
+  if(data.data.added){wishlist.push(dishId);toast('Added to wishlist ♡');}
+  else{wishlist=wishlist.filter(x=>x!==dishId);toast('Removed from wishlist');}
+  renderWishlist();updateBadges();renderMenu(currentFilter);
+}
+
+function renderWishlist(){
+  const body=document.getElementById('wish-body');
+  if(!wishlist.length){
+    body.innerHTML='<div class="cart-empty"><span class="cart-empty-icon">♡</span><p>Your wishlist is empty</p><p style="font-size:.8rem;margin-top:.5rem">Heart items to save them!</p></div>';
+    return;
+  }
+  body.innerHTML=wishlist.map(id=>{
+    const d=DISHES.find(x=>x.id===id);if(!d)return '';
+    return`<div class="wish-item">
+      <div class="wish-item-img"><img src="${d.img}" alt="${d.name}" onerror="this.src='https://via.placeholder.com/60x60/C9A84C/fff?text=🍽️'"/></div>
+      <div class="wish-item-info">
+        <div class="wish-item-name">${d.name}</div>
+        <div class="wish-item-price">${fmt(d.price)}</div>
+      </div>
+      <button class="wish-add-btn" onclick="addToCart(${d.id});closeWishlist()">Add to Cart</button>
+      <button class="wish-rm-btn" onclick="toggleWishlist(${d.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('wish-toggle').onclick=()=>{document.getElementById('wish-sidebar').classList.add('open');document.getElementById('wish-overlay').classList.add('open')};
+document.getElementById('wish-close').onclick=closeWishlist;
+document.getElementById('wish-overlay').onclick=closeWishlist;
+function closeWishlist(){document.getElementById('wish-sidebar').classList.remove('open');document.getElementById('wish-overlay').classList.remove('open')}
+
+// ────────────────────────────────────────────
+// MENU RENDER
+// ────────────────────────────────────────────
+let currentFilter='all';
+
+function renderMenu(filter='all'){
+  currentFilter=filter;
+  const grid=document.getElementById('menu-grid');
+  const filtered=filter==='all'?DISHES:DISHES.filter(d=>d.cat===filter);
+  grid.innerHTML=filtered.map((d,i)=>`
+    <div class="dish-card" style="animation-delay:${i*0.07}s">
+      <div class="dish-img">
+        <img src="${d.img}" alt="${d.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80'"/>
+        ${d.badge?`<span class="dish-badge${d.veg?' veg':''}">${d.badge}</span>`:''}
+        <button class="wish-btn${wishlist.includes(d.id)?' active':''}" onclick="toggleWishlist(${d.id})" title="Wishlist">
+          ${wishlist.includes(d.id)?'♥':'♡'}
+        </button>
+      </div>
+      <div class="dish-body">
+        <div class="dish-name">${d.name}</div>
+        <div class="dish-desc">${d.desc}</div>
+        <div class="dish-footer">
+          <div class="dish-price">${fmt(d.price)}</div>
+          <button class="add-btn" data-add-id="${d.id}" onclick="addToCart(${d.id})">+ Add</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('filter-tabs').addEventListener('click',e=>{
+  const btn=e.target.closest('.filter-tab');if(!btn)return;
+  document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderMenu(btn.dataset.cat);
+});
+
+// ────────────────────────────────────────────
+// GALLERY
+// ────────────────────────────────────────────
+function buildGallery(){
+  const track=document.getElementById('gallery-track');
+  const imgs=[...galleryImages,...galleryImages];
+  track.innerHTML=imgs.map(src=>`<div class="gallery-img"><img src="${src}" alt="Dish" loading="lazy"/></div>`).join('');
+  // Auto-scroll
+  let pos=0;
+  setInterval(()=>{pos+=0.5;if(pos>=track.scrollWidth/2)pos=0;track.style.transform=`translateX(-${pos}px)`;},20);
+}
+
+// ────────────────────────────────────────────
+// PARTICLES
+// ────────────────────────────────────────────
+function buildParticles(){
+  const container=document.getElementById('particles-container');
+  for(let i=0;i<20;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    p.style.cssText=`left:${Math.random()*100}%;width:${4+Math.random()*6}px;height:${4+Math.random()*6}px;animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*10}s;opacity:${.3+Math.random()*.5};background:${Math.random()>.5?'#C9A84C':'#e8c96b'}`;
+    container.appendChild(p);
+  }
+}
+
+// ────────────────────────────────────────────
+// SCROLL EFFECTS
+// ────────────────────────────────────────────
+function initScrollEffects(){
+  const nav=document.getElementById('main-nav');
+  window.addEventListener('scroll',()=>{nav.classList.toggle('scrolled',window.scrollY>50)});
+  const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.15});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+}
+
+function scrollToMenu(){document.getElementById('menu').scrollIntoView({behavior:'smooth'})}
+
+// ────────────────────────────────────────────
+// INIT
+// ────────────────────────────────────────────
+document.getElementById('btn-auth').onclick=openAuthModal;
+
+(async()=>{
+  buildParticles();
+  buildGallery();
+  renderMenu();
+  initScrollEffects();
+  initCardListeners();
+  await checkSession();
+})();
+</script>
+<!-- ══ PWA Service Worker ══ -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(reg  => console.log('✅ SW registered:', reg.scope))
+        .catch(err => console.warn('SW registration failed:', err));
+    });
+  }
+</script>
+</body>
+</html>

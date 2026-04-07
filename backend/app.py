@@ -1,11 +1,12 @@
 """
 The Grand Table — Flask Backend
 Run: python app.py
-Requires: pip install flask flask-cors mysql-connector-python python-dotenv
+Requires: pip install flask flask-cors mysql-connector-python python-dotenv qrcode[pil]
 """
 
 from flask import Flask, request, jsonify, session, send_from_directory
 from flask_cors import CORS
+from werkzeug.middleware.proxy_fix import ProxyFix   # ← FIX 1: Render proxy
 import mysql.connector
 import hashlib
 import os
@@ -23,18 +24,40 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__, static_folder="../frontend", static_url_path="")
+
+# ── FIX 2: Trust Render's proxy so HTTPS is detected correctly ──
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
 app.secret_key = os.environ.get("SECRET_KEY", "grand-table-secret-2026")
-app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+# ── FIX 3: Secure cookie config for HTTPS (Render) ──
+IS_PRODUCTION = os.environ.get("RENDER", "") != ""   # Render sets this automatically
+
+app.config["SESSION_COOKIE_SAMESITE"] = "None" if IS_PRODUCTION else "Lax"
+app.config["SESSION_COOKIE_SECURE"]   = IS_PRODUCTION      # True on Render (HTTPS)
 app.config["SESSION_COOKIE_HTTPONLY"] = True
+
+# ── FIX 4: CORS — allow both localhost AND the live Render URL ──
+RENDER_URL = os.environ.get("RENDER_EXTERNAL_URL", "")   # auto-set by Render
+
+ALLOWED_ORIGINS = [
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+]
+if RENDER_URL:
+    ALLOWED_ORIGINS.append(RENDER_URL)
+    ALLOWED_ORIGINS.append(RENDER_URL.replace("http://", "https://"))
+
+# Also allow any custom domain set via env var
+CUSTOM_DOMAIN = os.environ.get("CUSTOM_DOMAIN", "")
+if CUSTOM_DOMAIN:
+    ALLOWED_ORIGINS.append(f"https://{CUSTOM_DOMAIN}")
 
 CORS(app,
      supports_credentials=True,
-     origins=[
-         "http://localhost:5000",
-         "http://127.0.0.1:5000",
-         "http://localhost:5500",
-         "http://127.0.0.1:5500",
-     ])
+     origins=ALLOWED_ORIGINS)
 
 # ─────────────────────────────────────────────
 # DATABASE CONFIG
@@ -52,11 +75,11 @@ DB_CONFIG = {
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 # ─────────────────────────────────────────────
-# UPI CONFIG  (set these in your .env file)
+# UPI CONFIG
 # ─────────────────────────────────────────────
-UPI_ID          = os.environ.get("UPI_ID", "yourupiid@upi")          # e.g. grandtable@okicici
-UPI_PAYEE_NAME  = os.environ.get("UPI_PAYEE_NAME", "The Grand Table") # shown in UPI apps
-UPI_CURRENCY    = "INR"
+UPI_ID         = os.environ.get("UPI_ID", "yourupiid@upi")
+UPI_PAYEE_NAME = os.environ.get("UPI_PAYEE_NAME", "The Grand Table")
+UPI_CURRENCY   = "INR"
 
 
 def get_db():
@@ -753,7 +776,6 @@ def delete_address(addr_id):
     try:
         cur.execute("DELETE FROM addresses WHERE id=%s AND user_id=%s", (addr_id, uid))
         conn.commit()
-        # promote next address to primary
         cur.execute(
             "SELECT id FROM addresses WHERE user_id=%s ORDER BY id LIMIT 1", (uid,)
         )
@@ -955,21 +977,19 @@ def ai_chat():
 # ─────────────────────────────────────────────
 
 def _build_upi_uri(amount: float, order_ref: str) -> str:
-    """Build a standard UPI deep-link URI that any UPI app can parse."""
     import urllib.parse
     params = urllib.parse.urlencode({
-        "pa": UPI_ID,              # payee VPA / UPI ID
-        "pn": UPI_PAYEE_NAME,      # payee name
-        "am": f"{amount:.2f}",     # amount
-        "cu": UPI_CURRENCY,        # currency (INR)
-        "tn": f"Order {order_ref} - The Grand Table",  # transaction note
-        "tr": order_ref,           # transaction reference
+        "pa": UPI_ID,
+        "pn": UPI_PAYEE_NAME,
+        "am": f"{amount:.2f}",
+        "cu": UPI_CURRENCY,
+        "tn": f"Order {order_ref} - The Grand Table",
+        "tr": order_ref,
     })
     return f"upi://pay?{params}"
 
 
 def _generate_qr_png_b64(data: str) -> str:
-    """Generate a QR code PNG and return it as a base64 string."""
     qr = qrcode.QRCode(
         version=None,
         error_correction=qrcode.constants.ERROR_CORRECT_M,
@@ -987,28 +1007,6 @@ def _generate_qr_png_b64(data: str) -> str:
 @app.route("/api/payment/upi/qr", methods=["POST"])
 @login_required
 def upi_generate_qr():
-    """
-    Generate a real UPI QR code for payment.
-
-    Request body:
-        { "amount": 999.50, "order_ref": "GT-ABCD1234" }
-
-    Response:
-        {
-          "success": true,
-          "data": {
-            "qr_image_b64": "<base64 PNG>",
-            "upi_uri":      "upi://pay?...",
-            "upi_id":       "grandtable@okicici",
-            "amount":       999.50,
-            "order_ref":    "GT-ABCD1234",
-            "payment_id":   42
-          }
-        }
-
-    The frontend should display the QR as:
-        <img src="data:image/png;base64,{qr_image_b64}" />
-    """
     d         = request.get_json(force=True) or {}
     amount    = float(d.get("amount", 0))
     order_ref = d.get("order_ref", "").strip()
@@ -1022,7 +1020,6 @@ def upi_generate_qr():
     upi_uri = _build_upi_uri(amount, order_ref)
     qr_b64  = _generate_qr_png_b64(upi_uri)
 
-    # Record pending payment in DB
     conn = get_db()
     cur  = conn.cursor()
     try:
@@ -1038,7 +1035,7 @@ def upi_generate_qr():
 
     return ok({
         "qr_image_b64": qr_b64,
-        "upi_uri":      upi_uri,   # use as href for "Open UPI App" button on mobile
+        "upi_uri":      upi_uri,
         "upi_id":       UPI_ID,
         "amount":       amount,
         "order_ref":    order_ref,
@@ -1049,19 +1046,6 @@ def upi_generate_qr():
 @app.route("/api/payment/upi/confirm", methods=["POST"])
 @login_required
 def upi_confirm_payment():
-    """
-    Mark a UPI payment as confirmed after the customer has paid.
-
-    Two modes:
-      1. Self-confirm (customer presses "I have paid"):
-         { "payment_id": 42 }
-
-      2. With UPI transaction ID (customer pastes from their UPI app):
-         { "payment_id": 42, "upi_txn_ref": "407264152304" }
-
-    For automated verification, integrate Razorpay/PayU and call their
-    verify API here, then set status = 'verified' instead of 'confirmed'.
-    """
     d          = request.get_json(force=True) or {}
     payment_id = d.get("payment_id")
     txn_ref    = d.get("upi_txn_ref", "").strip()
@@ -1089,8 +1073,6 @@ def upi_confirm_payment():
                WHERE id=%s""",
             (txn_ref or "", payment_id),
         )
-
-        # Also update the linked order status to 'confirmed'
         cur.execute(
             "UPDATE orders SET status='confirmed', payment_method='upi' WHERE order_ref=%s AND user_id=%s",
             (row["order_ref"], uid),
@@ -1110,7 +1092,6 @@ def upi_confirm_payment():
 @app.route("/api/payment/upi/status/<int:payment_id>", methods=["GET"])
 @login_required
 def upi_payment_status(payment_id):
-    """Check the status of a UPI payment."""
     uid  = session["user_id"]
     conn = get_db()
     cur  = conn.cursor(dictionary=True)
@@ -1133,6 +1114,21 @@ def upi_payment_status(payment_id):
 
 
 # ─────────────────────────────────────────────
+# DEBUG — /api/debug/session  (remove after confirming it works)
+# ─────────────────────────────────────────────
+@app.route("/api/debug/session", methods=["GET"])
+def debug_session():
+    return jsonify({
+        "session_keys": list(session.keys()),
+        "user_id":      session.get("user_id"),
+        "is_production": IS_PRODUCTION,
+        "secure_cookie": app.config.get("SESSION_COOKIE_SECURE"),
+        "samesite":     app.config.get("SESSION_COOKIE_SAMESITE"),
+        "render_url":   RENDER_URL,
+    })
+
+
+# ─────────────────────────────────────────────
 # HEALTH CHECK  /api/health
 # ─────────────────────────────────────────────
 @app.route("/api/health", methods=["GET"])
@@ -1152,7 +1148,6 @@ def health():
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve_frontend(path):
-    """Serve index.html for all non-API routes (SPA fallback)."""
     frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend")
     frontend_dir = os.path.abspath(frontend_dir)
     if path and os.path.exists(os.path.join(frontend_dir, path)):
@@ -1165,8 +1160,9 @@ def serve_frontend(path):
 # ─────────────────────────────────────────────
 if __name__ == "__main__":
     init_db()
-    port = int(os.environ.get("PORT", 5000))
+    port  = int(os.environ.get("PORT", 5000))
     debug = os.environ.get("FLASK_DEBUG", "true").lower() == "true"
     print(f"🚀  Grand Table backend running on http://localhost:{port}")
     print(f"🍽️   Open http://localhost:{port} in your browser")
+    print(f"🔒  Production mode: {IS_PRODUCTION}")
     app.run(debug=debug, host="0.0.0.0", port=port)
